@@ -447,8 +447,17 @@ app.get('/debug/build', (req, res) => {
 // ============================================================================
 
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} from ${req.ip}`);
   next();
+});
+
+// ============================================================================
+// ROOT HANDLER
+// ============================================================================
+
+app.get('/', (req, res) => {
+  console.log('ROOT HANDLER CALLED');
+  res.sendFile(path.join(__dirname, 'client/dist/index.html'));
 });
 
 // ============================================================================
@@ -465,6 +474,7 @@ if (fs.existsSync(clientBuildPath)) {
 
   // SPA fallback: route all non-API requests to index.html
   app.get('*', (req, res) => {
+    console.log(`WILDCARD HANDLER: serving index.html for ${req.path}`);
     res.sendFile(path.join(clientBuildPath, 'index.html'), (err) => {
       if (err) console.error('Error serving index.html:', err);
     });
