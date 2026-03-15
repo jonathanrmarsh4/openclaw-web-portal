@@ -184,29 +184,27 @@ app.get('/auth/me', verifyToken, (req, res) => {
 app.get('/api/portfolio', verifyToken, async (req, res) => {
   try {
     console.log(`[API] Fetching portfolio from ${OPENCLAW_BASE_URL}/api/portfolio`);
-    const response = await axios.get(`${OPENCLAW_BASE_URL}/api/portfolio`, { timeout: 5000 });
+    const response = await axios.get(`${OPENCLAW_BASE_URL}/api/portfolio`, { timeout: 20000 });
+    console.log(`[API] Portfolio success: ${response.data?.data?.trades?.length || 0} trades`);
     res.json(response.data);
   } catch (error) {
     console.error(`[API] Portfolio fetch failed:`, error.message);
     console.error(`[API] Attempted backend URL: ${OPENCLAW_BASE_URL}`);
-    console.error(`[API] Error details:`, error.code, error.address);
-    
-    // Return mock data so dashboard can load
-    res.json({
-      balance: 5000,
-      trades: [],
-      status: 'connected',
-      note: 'Mock data - Tailscale connection not yet configured'
+    console.error(`[API] Error code:`, error.code);
+    res.status(503).json({ 
+      error: 'Backend API unavailable', 
+      details: error.message,
+      url: OPENCLAW_BASE_URL 
     });
   }
 });
 
 app.get('/api/jobs', verifyToken, async (req, res) => {
   try {
-    const response = await axios.get(`${OPENCLAW_BASE_URL}/api/jobs`, { timeout: 5000 });
+    const response = await axios.get(`${OPENCLAW_BASE_URL}/api/jobs`, { timeout: 20000 });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch jobs' });
+    res.status(503).json({ error: 'Backend API unavailable', details: error.message });
   }
 });
 
