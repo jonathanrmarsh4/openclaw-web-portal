@@ -429,19 +429,24 @@ const clientBuildPath = path.join(__dirname, 'client/dist');
 
 // Check if client build exists; if so, serve it
 if (fs.existsSync(clientBuildPath)) {
+  console.log(`✓ Serving React build from ${clientBuildPath}`);
   app.use(express.static(clientBuildPath));
 
   // SPA fallback: route all non-API requests to index.html
   app.get('*', (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
+    res.sendFile(path.join(clientBuildPath, 'index.html'), (err) => {
+      if (err) console.error('Error serving index.html:', err);
+    });
   });
 } else {
+  console.warn(`⚠️  React build NOT found at ${clientBuildPath}`);
   // Fallback: simple message
   app.get('/', (req, res) => {
     res.json({
       message: 'OpenClaw Web Portal API Gateway',
       status: 'running',
       docs: 'See README.md for API documentation',
+      note: 'React build not found. Check client/dist exists.',
     });
   });
 }
