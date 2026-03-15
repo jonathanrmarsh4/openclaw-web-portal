@@ -130,7 +130,7 @@ app.get('/auth/callback', async (req, res) => {
     );
 
     console.log('[AUTH_CALLBACK] Success, returning auth completion page');
-    // Return an HTML page that stores the token and redirects
+    // Return an HTML page that stores the token in sessionStorage (what React expects)
     res.send(`
       <!DOCTYPE html>
       <html>
@@ -139,9 +139,9 @@ app.get('/auth/callback', async (req, res) => {
         </head>
         <body>
           <script>
-            // Store token in localStorage
-            localStorage.setItem('token', '${token}');
-            localStorage.setItem('user', JSON.stringify(${JSON.stringify({ email: decoded.email, name: decoded.name })}));
+            // Store token in sessionStorage (React app expects this, not localStorage)
+            sessionStorage.setItem('token', '${token}');
+            sessionStorage.setItem('user', JSON.stringify(${JSON.stringify({ email: decoded.email, name: decoded.name })}));
             // Redirect to dashboard
             window.location.href = '/dashboard';
           </script>
