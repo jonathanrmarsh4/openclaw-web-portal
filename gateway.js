@@ -25,9 +25,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-in-pr
 const JWT_EXPIRY = '1h';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const OPENCLAW_PUBLIC_URL = process.env.OPENCLAW_PUBLIC_URL;
 const TAILSCALE_IP = process.env.TAILSCALE_IP || 'localhost';
 const TAILSCALE_PORT = process.env.TAILSCALE_PORT || 3000;
-const OPENCLAW_BASE_URL = `http://${TAILSCALE_IP}:${TAILSCALE_PORT}`;
+const OPENCLAW_BASE_URL = OPENCLAW_PUBLIC_URL 
+  ? OPENCLAW_PUBLIC_URL
+  : `http://${TAILSCALE_IP}:${TAILSCALE_PORT}`;
 const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL || 'jonathan@example.com';
 
 let REDIRECT_URI = 'http://localhost:3000/auth/callback';
