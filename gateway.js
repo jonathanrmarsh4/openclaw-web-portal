@@ -30,9 +30,13 @@ const TAILSCALE_PORT = process.env.TAILSCALE_PORT || 3000;
 const OPENCLAW_BASE_URL = `http://${TAILSCALE_IP}:${TAILSCALE_PORT}`;
 const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL || 'jonathan@example.com';
 
-const REDIRECT_URI = process.env.RAILWAY_PUBLIC_DOMAIN 
-  ? `${process.env.RAILWAY_PUBLIC_DOMAIN}/auth/callback`
-  : 'http://localhost:3000/auth/callback';
+let REDIRECT_URI = 'http://localhost:3000/auth/callback';
+if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+  const domain = process.env.RAILWAY_PUBLIC_DOMAIN;
+  // Ensure https:// prefix (Railway strips it, so add it back)
+  const domainWithProtocol = domain.startsWith('http') ? domain : `https://${domain}`;
+  REDIRECT_URI = `${domainWithProtocol}/auth/callback`;
+}
 
 console.log('[DEBUG] RAILWAY_PUBLIC_DOMAIN:', process.env.RAILWAY_PUBLIC_DOMAIN);
 console.log('[DEBUG] Final REDIRECT_URI:', REDIRECT_URI);
