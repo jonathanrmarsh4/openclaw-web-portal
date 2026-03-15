@@ -129,9 +129,26 @@ app.get('/auth/callback', async (req, res) => {
       { expiresIn: JWT_EXPIRY }
     );
 
-    console.log('[AUTH_CALLBACK] Success, redirecting to dashboard with token');
-    // Redirect to dashboard with token in URL so React can capture it
-    res.redirect(`/?token=${token}`);
+    console.log('[AUTH_CALLBACK] Success, returning auth completion page');
+    // Return an HTML page that stores the token and redirects
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Signing in...</title>
+        </head>
+        <body>
+          <script>
+            // Store token in localStorage
+            localStorage.setItem('token', '${token}');
+            localStorage.setItem('user', JSON.stringify(${JSON.stringify({ email: decoded.email, name: decoded.name })}));
+            // Redirect to dashboard
+            window.location.href = '/dashboard';
+          </script>
+          <p>Signing in...</p>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error('[AUTH_CALLBACK] ERROR:', error.message);
     console.error('[AUTH_CALLBACK] Full error:', error);
