@@ -17,7 +17,7 @@ RUN curl -fsSLo /usr/share/keyrings/tailscale-archive-keyring.gpg https://pkgr.d
 WORKDIR /app
 
 # Copy root package files
-COPY package.json package-lock.json ./
+COPY package.json ./
 
 # Install root dependencies
 RUN npm install --production
