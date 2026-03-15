@@ -34,6 +34,9 @@ const REDIRECT_URI = process.env.RAILWAY_PUBLIC_DOMAIN
   ? `${process.env.RAILWAY_PUBLIC_DOMAIN}/auth/callback`
   : 'http://localhost:3000/auth/callback';
 
+console.log('[DEBUG] RAILWAY_PUBLIC_DOMAIN:', process.env.RAILWAY_PUBLIC_DOMAIN);
+console.log('[DEBUG] Final REDIRECT_URI:', REDIRECT_URI);
+
 const oauth2Client = new OAuth2Client(
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
@@ -183,4 +186,11 @@ app.listen(PORT, () => {
   console.log(`📡 Backend (Tailscale): ${OPENCLAW_BASE_URL}`);
   console.log(`📧 Allowed email: ${ALLOWED_EMAIL}`);
   console.log(`🔐 OAuth Redirect URI: ${REDIRECT_URI}`);
+  console.log(`[DEBUG] All env vars set:`, {
+    GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID ? '✓' : '✗',
+    GOOGLE_CLIENT_SECRET: GOOGLE_CLIENT_SECRET ? '✓' : '✗',
+    JWT_SECRET: JWT_SECRET ? '✓' : '✗',
+    ALLOWED_EMAIL,
+    RAILWAY_PUBLIC_DOMAIN: process.env.RAILWAY_PUBLIC_DOMAIN,
+  });
 });
