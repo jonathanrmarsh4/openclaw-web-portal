@@ -129,8 +129,9 @@ app.get('/auth/callback', async (req, res) => {
       { expiresIn: JWT_EXPIRY }
     );
 
-    console.log('[AUTH_CALLBACK] Success, returning token');
-    res.json({ token, user: { email: decoded.email, name: decoded.name } });
+    console.log('[AUTH_CALLBACK] Success, redirecting to dashboard with token');
+    // Redirect to dashboard with token in URL so React can capture it
+    res.redirect(`/?token=${token}`);
   } catch (error) {
     console.error('[AUTH_CALLBACK] ERROR:', error.message);
     console.error('[AUTH_CALLBACK] Full error:', error);
