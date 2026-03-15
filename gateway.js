@@ -421,6 +421,36 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint to check if React build exists
+app.get('/debug/build', (req, res) => {
+  const clientBuildPath = path.join(__dirname, 'client/dist');
+  const exists = fs.existsSync(clientBuildPath);
+  const indexExists = fs.existsSync(path.join(clientBuildPath, 'index.html'));
+  
+  let files = [];
+  try {
+    files = fs.readdirSync(clientBuildPath);
+  } catch (e) {
+    files = [`Error reading dir: ${e.message}`];
+  }
+
+  res.json({
+    buildPathExists: exists,
+    indexHtmlExists: indexExists,
+    buildPath: clientBuildPath,
+    files,
+  });
+});
+
+// ============================================================================
+// REQUEST LOGGING (Debug)
+// ============================================================================
+
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
 // ============================================================================
 // STATIC FILES (React build)
 // ============================================================================
@@ -430,6 +460,7 @@ const clientBuildPath = path.join(__dirname, 'client/dist');
 // Check if client build exists; if so, serve it
 if (fs.existsSync(clientBuildPath)) {
   console.log(`✓ Serving React build from ${clientBuildPath}`);
+  console.log(`Files in dist:`, fs.readdirSync(clientBuildPath));
   app.use(express.static(clientBuildPath));
 
   // SPA fallback: route all non-API requests to index.html
