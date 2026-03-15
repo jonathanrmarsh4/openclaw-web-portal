@@ -2,19 +2,11 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copy client first to build in parallel
-COPY client ./client
-RUN cd client && npm install && npm run build && cd ..
+# Copy all files
+COPY . .
 
-# Copy root package files
-COPY package.json package-lock.json ./
-
-# Install root dependencies
+# Install root dependencies only (client build is pre-built)
 RUN npm install --production
-
-# Copy gateway and config
-COPY gateway.js .
-COPY .env.example .
 
 # Expose port
 EXPOSE 3000
