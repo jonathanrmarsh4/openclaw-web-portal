@@ -8,8 +8,8 @@ COPY . .
 # Install root dependencies only (client build is pre-built)
 RUN npm install --production
 
-# Expose port
-EXPOSE 3000
+# Expose port (Railway will override with PORT env var)
+EXPOSE 8080
 
 # Start gateway server
 CMD ["node", "gateway.js"]
