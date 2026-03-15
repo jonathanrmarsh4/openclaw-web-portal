@@ -109,12 +109,17 @@ app.post('/auth/login', (req, res) => {
 app.get('/auth/callback', async (req, res) => {
   try {
     const { code } = req.query;
+    console.log('[AUTH_CALLBACK] Received code:', code ? 'yes' : 'no');
     if (!code) return res.status(400).json({ error: 'Missing code' });
 
+    console.log('[AUTH_CALLBACK] Exchanging code for token...');
     const { tokens } = await oauth2Client.getToken(code);
+    console.log('[AUTH_CALLBACK] Got tokens, decoding ID token...');
     const decoded = jwt.decode(tokens.id_token);
+    console.log('[AUTH_CALLBACK] Decoded email:', decoded?.email);
 
     if (decoded?.email !== ALLOWED_EMAIL) {
+      console.log('[AUTH_CALLBACK] Email mismatch:', decoded?.email, '!==', ALLOWED_EMAIL);
       return res.status(403).json({ error: 'Unauthorized email' });
     }
 
@@ -124,10 +129,12 @@ app.get('/auth/callback', async (req, res) => {
       { expiresIn: JWT_EXPIRY }
     );
 
+    console.log('[AUTH_CALLBACK] Success, returning token');
     res.json({ token, user: { email: decoded.email, name: decoded.name } });
   } catch (error) {
-    console.error('OAuth error:', error.message);
-    res.status(500).json({ error: 'Auth failed' });
+    console.error('[AUTH_CALLBACK] ERROR:', error.message);
+    console.error('[AUTH_CALLBACK] Full error:', error);
+    res.status(500).json({ error: 'Auth failed', details: error.message });
   }
 });
 
