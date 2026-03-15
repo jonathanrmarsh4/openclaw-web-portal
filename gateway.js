@@ -30,10 +30,14 @@ const TAILSCALE_PORT = process.env.TAILSCALE_PORT || 3000;
 const OPENCLAW_BASE_URL = `http://${TAILSCALE_IP}:${TAILSCALE_PORT}`;
 const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL || 'jonathan@example.com';
 
+const REDIRECT_URI = process.env.RAILWAY_PUBLIC_DOMAIN 
+  ? `${process.env.RAILWAY_PUBLIC_DOMAIN}/auth/callback`
+  : 'http://localhost:3000/auth/callback';
+
 const oauth2Client = new OAuth2Client(
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
-  `${process.env.RAILWAY_PUBLIC_DOMAIN || 'http://localhost:3000'}/auth/callback`
+  REDIRECT_URI
 );
 
 // ============================================================================
@@ -178,4 +182,5 @@ app.listen(PORT, () => {
   console.log(`🚀 OpenClaw Web Portal running on port ${PORT}`);
   console.log(`📡 Backend (Tailscale): ${OPENCLAW_BASE_URL}`);
   console.log(`📧 Allowed email: ${ALLOWED_EMAIL}`);
+  console.log(`🔐 OAuth Redirect URI: ${REDIRECT_URI}`);
 });
