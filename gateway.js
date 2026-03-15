@@ -130,45 +130,58 @@ app.get('/auth/callback', async (req, res) => {
     if (!code) return res.status(400).json({ error: 'Missing code' });
 
     console.log('[AUTH_CALLBACK] Exchanging code for token...');
-    const { tokens } = await oauth2Client.getToken(code);
-    console.log('[AUTH_CALLBACK] Got tokens, decoding ID token...');
-    const decoded = jwt.decode(tokens.id_token);
-    console.log('[AUTH_CALLBACK] Decoded email:', decoded?.email);
+    console.log('[AUTH_CALLBACK] Google Client ID:', GOOGLE_CLIENT_ID ? '✓' : '✗');
+    console.log('[AUTH_CALLBACK] Redirect URI:', REDIRECT_URI);
+    
+    try {
+      const { tokens } = await oauth2Client.getToken(code);
+      console.log('[AUTH_CALLBACK] Got tokens, decoding ID token...');
+      const decoded = jwt.decode(tokens.id_token);
+      console.log('[AUTH_CALLBACK] Decoded email:', decoded?.email);
 
-    if (decoded?.email !== ALLOWED_EMAIL) {
-      console.log('[AUTH_CALLBACK] Email mismatch:', decoded?.email, '!==', ALLOWED_EMAIL);
-      return res.status(403).json({ error: 'Unauthorized email' });
+      if (decoded?.email !== ALLOWED_EMAIL) {
+        console.log('[AUTH_CALLBACK] Email mismatch:', decoded?.email, '!==', ALLOWED_EMAIL);
+        return res.status(403).json({ error: 'Unauthorized email' });
+      }
+
+      const token = jwt.sign(
+        { email: decoded.email, userId: decoded.sub, name: decoded.name },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRY }
+      );
+
+      console.log('[AUTH_CALLBACK] Success, returning auth completion page');
+      // Return an HTML page that stores the token in sessionStorage (what React expects)
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Signing in...</title>
+          </head>
+          <body>
+            <script>
+              // Store token in sessionStorage (React app expects this, not localStorage)
+              sessionStorage.setItem('token', '${token}');
+              sessionStorage.setItem('user', JSON.stringify(${JSON.stringify({ email: decoded.email, name: decoded.name })}));
+              // Redirect to dashboard
+              window.location.href = '/dashboard';
+            </script>
+            <p>Signing in...</p>
+          </body>
+        </html>
+      `);
+    } catch (tokenError) {
+      console.error('[AUTH_CALLBACK] Token exchange failed:');
+      console.error('  - Message:', tokenError.message);
+      console.error('  - Code:', tokenError.code);
+      console.error('  - Status:', tokenError.status);
+      if (tokenError.response) {
+        console.error('  - Response:', JSON.stringify(tokenError.response.data || tokenError.response).substring(0, 200));
+      }
+      throw tokenError;
     }
-
-    const token = jwt.sign(
-      { email: decoded.email, userId: decoded.sub, name: decoded.name },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRY }
-    );
-
-    console.log('[AUTH_CALLBACK] Success, returning auth completion page');
-    // Return an HTML page that stores the token in sessionStorage (what React expects)
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Signing in...</title>
-        </head>
-        <body>
-          <script>
-            // Store token in sessionStorage (React app expects this, not localStorage)
-            sessionStorage.setItem('token', '${token}');
-            sessionStorage.setItem('user', JSON.stringify(${JSON.stringify({ email: decoded.email, name: decoded.name })}));
-            // Redirect to dashboard
-            window.location.href = '/dashboard';
-          </script>
-          <p>Signing in...</p>
-        </body>
-      </html>
-    `);
   } catch (error) {
-    console.error('[AUTH_CALLBACK] ERROR:', error.message);
-    console.error('[AUTH_CALLBACK] Full error:', error);
+    console.error('[AUTH_CALLBACK] FINAL ERROR:', error.message);
     res.status(500).json({ error: 'Auth failed', details: error.message });
   }
 });
